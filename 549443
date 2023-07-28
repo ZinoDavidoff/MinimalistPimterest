@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Masonry Layout</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+<body>
+  <div class="dark-overlay">
+    <div class="modal-container">
+      <div class="modal-flex-container">
+        <div class="modal-image-container">
+          <div class="modal-image-placeholder">
+          </div>
+          <img id="modal-image" src="" alt="" />
+        </div>
+        <div class="modal-info">
+          <h2 class="modal-title"></h2>
+          <p class="modal-commentary"></p>
+          <div class="modal-tags">
+          </div>
+          <h4 class="modal-author"></h4>
+          <div class="commentary-container">
+            <textarea id="commentary-field" class="commentary-field" placeholder="Enter your comment"></textarea>
+            <button id="send-button" class="send-button"><i class="fas fa-paper-plane"></i></button>
+          </div>
+          <div class="comments-section">
+            <h3 class="comments-title">Comments:</h3>
+            <ul id="comments-list" class="comments-list"></ul>
+          </div>
+
+          <span class="modal-close-button">X</span>
+          <div class="social-buttons">
+            <a class="share-button facebook" href="#">Share on Facebook</a>
+            <a class="share-button twitter" href="#">Share on Twitter</a>
+            <a class="share-button pinterest" href="#">Pin on Pinterest</a>
+            <a class="download-button" href="#" download>
+              <i class="fas fa-download download-icon"></i>Download
+            </a>
+          </div>
+        </div>
+        <button class="modal-arrow-button prev">&#8592;</button>
+        <button class="modal-arrow-button next">&#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="masonry-grid"></div>
+  <label class="toggle-switch">
+    <input type="checkbox" id="dark-mode-checkbox">
+    <span class="slider round"></span>
+  </label>
+  <div class="search-container">
+    <div class="search-input-container">
+      <input type="text" id="search-input" placeholder="Search for Images">
+      <button id="clear-button">X</button>
+    </div>
+  </div>
+  
+  <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+  <script type="module" src="script.js"></script>
+  <script type="module" src="commentaries.js"></script>
+  <script type="module" src="authors.js"></script>
+  <script type="module" src="tags.js"></script>
+</body>
+</html>
