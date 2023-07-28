@@ -39,7 +39,7 @@ const generateGridItems = async (startIndex, endIndex) => {
       //   ? `https://source.unsplash.com/random/400x${imgHeight}?sig=${randomImgID}`
       //   : `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
 
-       const imageUrl = `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
+       //const imageUrl = `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
 
       // Randomly choose an image height from the imgHeights array
       const randomIndex = Math.floor(Math.random() * imgHeights.length);
@@ -49,7 +49,7 @@ const generateGridItems = async (startIndex, endIndex) => {
       const randomImgID = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER ** Math.random());
 
       // Generate the image URL using Unsplash with random signature for uniqueness
-      //const imageUrl = `https://source.unsplash.com/400x${imgHeight}?sig=${randomImgID}`;
+      const imageUrl = `https://source.unsplash.com/400x${imgHeight}?sig=${randomImgID}`;
 
       // Generate a random number of tags for the current image (minimum 3)
       const numberOfTags = Math.floor(Math.random() * 3) + 3;
