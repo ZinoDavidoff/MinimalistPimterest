@@ -39,7 +39,7 @@ const generateGridItems = async (startIndex, endIndex) => {
       //   ? `https://source.unsplash.com/random/400x${imgHeight}?sig=${randomImgID}`
       //   : `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
 
-       const imageUrl = `https://picsum.photos/id/${itemIndex}/400/${imgHeight}`;
+       const imageUrl = `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
 
       // Randomly choose an image height from the imgHeights array
       const randomIndex = Math.floor(Math.random() * imgHeights.length);
