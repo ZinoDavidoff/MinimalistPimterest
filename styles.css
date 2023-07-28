@@ -29,7 +29,6 @@ body {
   justify-content: center;
   align-items: center;
   height: 100%;
-  width: 90vw;
 }
 
 .modal-content {
@@ -47,6 +46,7 @@ body {
   height: calc(400px + 4rem);
   transform: scale(0);
   transition: transform 0.5s ease-in-out;
+  width: 95vw;
 }
 
 .modal-title {
