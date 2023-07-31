@@ -13,15 +13,14 @@ const IMAGE_SEARCH_DELAY = 500;
 const grid = document.querySelector(".masonry-grid");
 let masonry;
 let divs = [];
+let filteredDivs = []; // An array to store the filtered images
 let currentImageIndex;
 
 // Function to generate a random number within a range (min, max)
-const generateRandomArrayLength = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 // Generating a random array length within the range [50, 100]
-const randomArrayLength = generateRandomArrayLength(  RANDOM_ARRAY_MIN_LENGTH,
-  RANDOM_ARRAY_MAX_LENGTH);
+const randomArrayLength = generateRandomArrayLength(RANDOM_ARRAY_MIN_LENGTH, RANDOM_ARRAY_MAX_LENGTH);
 
 // Function to generate grid items asynchronously within a given index range
 const generateGridItems = async (startIndex, endIndex) => {
@@ -39,7 +38,7 @@ const generateGridItems = async (startIndex, endIndex) => {
       //   ? `https://source.unsplash.com/random/400x${imgHeight}?sig=${randomImgID}`
       //   : `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
 
-       //const imageUrl = `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
+      // const imageUrl = `https://picsum.photos/id/${itemIndex}/400/${imgHeight}`;
 
       // Randomly choose an image height from the imgHeights array
       const randomIndex = Math.floor(Math.random() * imgHeights.length);
@@ -97,7 +96,6 @@ const generateGridItems = async (startIndex, endIndex) => {
 
   return newDivs;
 };
-
 
 // Function to get random tags from the Tags array
 const getRandomTags = (numberOfTags) => {
@@ -193,9 +191,21 @@ const openImageModal = (imageData) => {
   grid.style.filter = "blur(10px)";
 
   // Load the modal image and hide the placeholder when the image is loaded
-  modalImage.addEventListener("load", () => {
-    modalImageContainer.style.display = "none";
+  const adjustModalImageContainer = () => {
+    if (window.matchMedia("(max-width: 1135px)").matches) {
+      modalImageContainer.style.display = 'block';
+    } else {
+      modalImageContainer.style.display = "none";
+    }
     modalImage.style.display = "block";
+  }
+  
+  modalImage.addEventListener("load", () => {
+    adjustModalImageContainer();
+  });
+  
+  window.addEventListener("resize", () => {
+    adjustModalImageContainer();
   });
 
   // Retrieve the comments for the current image
@@ -207,16 +217,40 @@ const openImageModal = (imageData) => {
 
 
   // Update the navigation buttons and other UI elements
-  if (currentImageIndex === 0) {
-    prevButton.style.display = "none";
-  } else {
-    prevButton.style.display = "block";
-  }
+  prevButton.style.display = currentImageIndex === 0 ? "none" : "block";
 
   checkIfNoComments();
   updateSendButtonState();
   checkModeClassInComments();
   searchContainer.style.display = "none";
+};
+
+// Function to handle tag click event and perform image filtering
+const handleTagClick = (event) => {
+  const clickedTag = event.target.textContent.slice(1).toLowerCase(); // Remove the '#' from the tag
+  performImageSearch(clickedTag);
+
+  // Update the displayed tag in the selected-tag-container
+  const selectedTagContainer = document.getElementById("selected-tag-container");
+  selectedTagContainer.innerHTML = `Filter by: #${clickedTag}`;
+  selectedTagContainer.style.visibility = "visible";
+  const tagSpan = document.createElement("span");
+  selectedTagContainer.appendChild(tagSpan);
+  tagSpan.textContent = "X";
+  tagSpan.classList.add("remove-tag");
+  enableClearButton(false); // Disable the "Clear" button after clearing the search
+  clearButton.style.cursor = "not-allowed";
+  tagSpan.addEventListener("click", () => {
+    // Your event handling code goes here
+    selectedTagContainer.textContent = "";
+    selectedTagContainer.style.visibility = "hidden";
+    searchInput.value = ""; // Clear the search input field
+    clearSearchResults();   // Clear the search results and display all images
+    enableSearchInput();
+    clearButton.style.cursor = "pointer";
+    filteredDivs = [];
+  });
+  selectedTagContainer.appendChild(tagSpan);
 };
 
 // Function to display tags in the modal
@@ -230,11 +264,7 @@ const displayTags = (tags) => {
     tagSpan.textContent = "#" + tag.toLowerCase().trim(); // Add '#' before each tag
     tagsContainer.appendChild(tagSpan);
 
-        // Add a click event listener to each tagSpan
-    tagSpan.addEventListener("click", () => {
-      const selectedCategory = tag.toLowerCase();
-      performImageSearch(selectedCategory);
-    });    
+    tagSpan.addEventListener("click", handleTagClick);   
   });
 };
 
@@ -253,7 +283,9 @@ const closeImageModal = () => {
 
 // Event listener for the modal close button
 const modalCloseButton = document.querySelector(".modal-close-button");
+const modalCloseButton1 = document.querySelector(".modal-close-button-1");
 modalCloseButton.addEventListener("click", closeImageModal);
+modalCloseButton1.addEventListener("click", closeImageModal);
 
 // Event listener to close the modal when clicking outside the modal image or info
 modalOverlay.addEventListener("click", (event) => {
@@ -314,7 +346,6 @@ shareButtons.forEach((button) => {
             sharingUrl = `https://pinterest.com/pin/create/button/?url=${imageUrl}`;
             break;
         }
-
         window.open(sharingUrl, "_blank");
       }
     }
@@ -345,39 +376,51 @@ const prevButton = modalContainer.querySelector(".modal-arrow-button.prev");
 modalContainer.addEventListener("click", (event) => {
   event.stopPropagation();
   const clickedElement = event.target;
+  const filtersApplied = filteredDivs.length > 0;
+  const currentIndexInFilteredDivs = filtersApplied ? filteredDivs.indexOf(divs[currentImageIndex]) : -1;
 
-  if (clickedElement.classList.contains("prev")) {
-    if (currentImageIndex > 0) {
-      const newIndex = currentImageIndex - 1;
+  const navigateToIndex = (newIndex) => {
+    if (newIndex !== -1) {
       const newImageData = {
         imageUrl: divs[newIndex].querySelector("img").getAttribute("src"),
         title: divs[newIndex].querySelector("h3").textContent,
         commentary: Commentaries[newIndex % Commentaries.length],
         author: Authors[newIndex % Authors.length],
         itemIndex: newIndex,
-        randomTags: divs[newIndex].randomTags
+        randomTags: divs[newIndex].randomTags,
       };
       openImageModal(newImageData);
     }
-  } else if (clickedElement.classList.contains("next")) {
-    if (currentImageIndex < divs.length - 1) {
-      const newIndex = currentImageIndex + 1;
-      const newImageData = {
-        imageUrl: divs[newIndex].querySelector("img").getAttribute("src"),
-        title: divs[newIndex].querySelector("h3").textContent,
-        commentary: Commentaries[newIndex % Commentaries.length],
-        author: Authors[newIndex % Authors.length],
-        itemIndex: newIndex,
-        randomTags: divs[newIndex].randomTags
-      };
-      openImageModal(newImageData);
-    }
-    if (currentImageIndex === divs.length - 1) {
-      generateAndAppendGridItems();
-    }
+  };
+
+  switch (true) {
+    case clickedElement.classList.contains("prev"):
+      if (filtersApplied && currentIndexInFilteredDivs > 0) {
+        navigateToIndex(divs.indexOf(filteredDivs[currentIndexInFilteredDivs - 1]));
+      } else if (!filtersApplied && currentImageIndex > 0) {
+        navigateToIndex(currentImageIndex - 1);
+      }
+      break;
+
+    case clickedElement.classList.contains("next"):
+      if (filtersApplied && currentIndexInFilteredDivs < filteredDivs.length - 1) {
+        navigateToIndex(divs.indexOf(filteredDivs[currentIndexInFilteredDivs + 1]));
+      } else if (!filtersApplied && currentImageIndex < divs.length - 1) {
+        navigateToIndex(currentImageIndex + 1);
+        if (currentImageIndex === divs.length - 1) {
+          generateAndAppendGridItems();
+        }
+      }
+      break;
+
+    default:
+      break;
   }
+
   updateSendButtonState();
 });
+
+
 
 const commentaryField = document.getElementById("commentary-field");
 const sendButton = document.getElementById("send-button");
@@ -420,15 +463,11 @@ const addComment = () => {
 
 // Function to update the state of the send button based on the comment field content
 const updateSendButtonState = () => {
-  const comment = commentaryField.value.trim();
-  if (comment === "") {
-    sendButton.style.cursor = "not-allowed";
-    sendButton.classList.add("disabled")
-  } else {
-    sendButton.style.cursor = "pointer";
-    sendButton.classList.remove("disabled")
-  }
-};
+    const comment = commentaryField.value.trim();
+    sendButton.style.cursor = comment === "" ? "not-allowed" : "pointer";
+    sendButton.classList.toggle("disabled", comment === "");
+  };
+  
 
 // Event listener for the input event on the commentary field
 commentaryField.addEventListener("input", updateSendButtonState);
@@ -491,12 +530,7 @@ const applyStylingToCommentsList = (darkMode) => {
       li.style.backgroundColor = darkMode ? "#1a1a1a" : "#ffffff";
       li.style.color = darkMode ? "#ffffff" : "#1a1a1a";
     }
-
-    if (darkMode) {
-      li.classList.add("light-mode");
-    } else {
-      li.classList.remove("light-mode");
-    }
+    darkMode ? li.classList.add("light-mode") : li.classList.remove("light-mode");
   });
 };
 
@@ -520,22 +554,14 @@ const removeDarkModeClassFromElements = () => {
 
 // Function to check the current dark mode state and apply relevant class
 const checkModeClassInComments = () => {
-  if (darkModeToggle.checked) {
-    addDarkModeClassToElements();
-  } else {
-    removeDarkModeClassFromElements();
-  }
-};
+    darkModeToggle.checked ? addDarkModeClassToElements() : removeDarkModeClassFromElements();
+  };  
 
 // Load the user's dark mode preference from local storage and apply it
 const darkModePreference = localStorage.getItem('darkModePreference');
-if (darkModePreference === 'true') {
-  darkModeToggle.checked = true;
-  addDarkModeClassToElements();
-} else {
-  darkModeToggle.checked = false;
-  removeDarkModeClassFromElements();
-}
+darkModeToggle.checked = darkModePreference === 'true';
+darkModePreference === 'true' ? addDarkModeClassToElements() : removeDarkModeClassFromElements();
+
 
 // Event listener for the dark mode toggle change event
 darkModeToggle.addEventListener('change', checkModeClassInComments);
@@ -551,28 +577,42 @@ const performImageSearch = (selectedCategory) => {
 
   if (selectedCategory) {
     // Tag-based search
-    closeImageModal()
+    closeImageModal();
     searchInput.value = ""; // Clear the search input field
     filteredImages = divs.filter((div) => {
       const tags = div.randomTags.map((tag) => tag.toLowerCase());
       return tags.includes(selectedCategory);
     });
+    disableSearchInput();
   } else {
     // Title-based search
     filteredImages = divs.filter((div) => {
       const title = div.querySelector("h3").textContent.toLowerCase();
       return title.includes(searchQuery);
     });
+    enableSearchInput();
   }
+
+  filteredDivs = filteredImages;
 
   grid.innerHTML = "";
 
-  filteredImages.forEach((div) => {
-    grid.appendChild(div);
-  });
+  if (filteredImages.length > 0) {
+    filteredImages.forEach((div) => {
+      grid.appendChild(div);
+    });
+  } else {
+    // Display "No content found" message
+    const noContentMessage = document.createElement("h3");
+    noContentMessage.textContent = "No content found";
+    noContentMessage.classList.add("no-content-message");
+    grid.appendChild(noContentMessage);
+  }
 
   initializeMasonryLayout();
+  enableClearButton(selectedCategory || searchQuery !== "");
 };
+
 
 // Event listener for the input event on the search input field
 searchInput.addEventListener("input", () => {
@@ -582,14 +622,9 @@ searchInput.addEventListener("input", () => {
   // Set a new timeout to perform the search after a delay
   searchTimeout = setTimeout(() => {
     const searchQuery = searchInput.value.trim().toLowerCase();
-    if (searchQuery === "") {
-      // Perform tag-based search based on the entered search query
-      performImageSearch(searchQuery);
-    } else {
-      // Perform title-based search when the search bar is empty
-      performImageSearch();
-    }
-  }, IMAGE_SEARCH_DELAY);
+    // Perform tag-based search if searchQuery is not empty, otherwise perform title-based search
+    performImageSearch(searchQuery === "" ? searchQuery : undefined);
+    }, IMAGE_SEARCH_DELAY);
 });
 
 // Function to clear the search results and display all images
@@ -603,10 +638,67 @@ const clearSearchResults = () => {
   initializeMasonryLayout();
 };
 
+// Function to enable or disable the "Clear" button based on the filter status
+const enableClearButton = (enable) => {
+  clearButton.disabled = !enable;
+};
+
 // Clear the search input field and perform a new search when the "Clear" button is clicked
 const clearButton = document.getElementById("clear-button");
+
 clearButton.addEventListener("click", () => {
   searchInput.value = ""; // Clear the search input field
   clearSearchResults();   // Clear the search results and display all images
+  enableSearchInput();
+  enableClearButton(false); // Disable the "Clear" button after clearing the search
 });
 
+// Function to update the search input placeholder
+const updateSearchPlaceholder = () => {
+  // Check if the search input is disabled (filters applied)
+  searchInput.placeholder = searchInput.disabled ? "Clear filters" : "Search by title";
+};
+
+// Function to disable the search input
+const disableSearchInput = () => {
+  searchInput.classList.add('disable-input');
+  searchInput.disabled = true;
+  updateSearchPlaceholder();
+  scrollToTop(); // Scroll smoothly to the top of the page when filters are applied
+};
+
+// Function to enable the search input
+const enableSearchInput = () => {
+  searchInput.classList.remove('disable-input');
+  searchInput.disabled = false;
+  updateSearchPlaceholder();
+};
+
+// Function to scroll smoothly to the top of the page
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+};
+
+const showScrollToTopButton = () => {
+  const viewportHeight = window.innerHeight;
+  const scrollY = window.scrollY;
+
+  // Show the button if the user has scrolled beyond the viewport height, otherwise hide it
+  const scrollToTopButton = document.getElementById("scrollToTopButton");
+  scrollToTopButton.classList.toggle('show', scrollY >= viewportHeight / 2);
+};
+
+// Add an event listener for the scroll event to show/hide the button
+window.addEventListener('scroll', showScrollToTopButton);
+
+// Add an event listener for the click event on the scrollToTopButton
+const scrollToTopButton = document.getElementById("scrollToTopButton");
+scrollToTopButton.addEventListener('click', scrollToTop);
+
+
+if (window.matchMedia("(max-width: 1135px)").matches) {
+  modalImageContainer.style.display = 'block'
+}
