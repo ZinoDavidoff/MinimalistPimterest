@@ -41,23 +41,25 @@
         </div>
         <button class="modal-arrow-button prev">&#8592;</button>
         <button class="modal-arrow-button next">&#8594;</button>
+        <span class="modal-close-button-1">X</span>
       </div>
     </div>
   </div>
-
-  
   <div class="masonry-grid"></div>
   <label class="toggle-switch">
     <input type="checkbox" id="dark-mode-checkbox">
     <span class="slider round"></span>
   </label>
+  <div id="selected-tag-container"></div> <!-- New div element to display the selected tag -->
   <div class="search-container">
     <div class="search-input-container">
-      <input type="text" id="search-input" placeholder="Search for Images">
-      <button id="clear-button">X</button>
+      <input type="text" id="search-input" placeholder="Search by title">
+      <button id="clear-button" disabled>X</button>
     </div>
   </div>
-  
+  <button id="scrollToTopButton" class="scroll-to-top-button">
+    <i class="fas fa-arrow-up"></i>
+  </button>
   <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
   <script type="module" src="script.js"></script>
   <script type="module" src="commentaries.js"></script>
