@@ -48,7 +48,7 @@ const generateGridItems = async (startIndex, endIndex) => {
       const randomImgID = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER ** Math.random());
 
       // Generate the image URL using Unsplash with random signature for uniqueness
-      const imageUrl = `https://source.unsplash.com/400x${imgHeight}?sig=${randomImgID}`;
+      const imageUrl = `https://source.unsplash.com/400x${imgHeight}?sig=${itemIndex}`;
 
       // Generate a random number of tags for the current image (minimum 3)
       const numberOfTags = Math.floor(Math.random() * 3) + 3;
