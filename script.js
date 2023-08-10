@@ -16,7 +16,6 @@ let filteredDivs = []; // An array to store the filtered images
 let currentImageIndex;
 let page = 1;
 let isFiltering = false;
-let images;
 
 // Function to generate a random number within a range (min, max)
 const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -38,7 +37,7 @@ const generateGridItems = async (startIndex, endIndex) => {
   const imgHeights = GRID_ITEM_HEIGHTS;
 
   // Fetch random images from the Unsplash API
-  images = await fetchRandomImages(page);
+  const images = await fetchRandomImages(page);
   page++;
 
   // Using Promise.all to create all the grid items asynchronously
@@ -370,8 +369,7 @@ downloadButtons.forEach((button) => {
     event.preventDefault();
     const gridItem = event.currentTarget.closest(".modal-flex-container");
     const img = gridItem.querySelector("img");
-    //const imageUrl = img.getAttribute("src");
-    const imageUrl = images[currentImageIndex].urls.full;
+    const imageUrl = img.getAttribute("src");
 
     const link = document.createElement("a");
     link.href = imageUrl;
