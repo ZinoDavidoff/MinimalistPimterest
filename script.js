@@ -1,4 +1,3 @@
-// Importing modules (commentaries.js and authors.js) to get data
 import { Commentaries } from "./commentaries.js";
 import { Authors } from "./authors.js";
 import { Tags } from "./tags.js";
@@ -15,6 +14,9 @@ let masonry;
 let divs = [];
 let filteredDivs = []; // An array to store the filtered images
 let currentImageIndex;
+let page = 1;
+let isFiltering = false;
+let images;
 
 // Function to generate a random number within a range (min, max)
 const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -22,33 +24,34 @@ const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max 
 // Generating a random array length within the range [50, 100]
 const randomArrayLength = generateRandomArrayLength(RANDOM_ARRAY_MIN_LENGTH, RANDOM_ARRAY_MAX_LENGTH);
 
+// Function to fetch random images from a URL
+const fetchRandomImages = async (page) => {
+  const accessKey = 'YnR1e5ZmxDeQ6WacDQVNIJW8UcyB_tMawKEI9EnSyRc';
+  const response = await fetch(`https://api.unsplash.com/search/photos?query=random&client_id=${accessKey}&page=${page}&per_page=${randomArrayLength}`);
+  const data = await response.json();
+  return data.results;
+}
+
 // Function to generate grid items asynchronously within a given index range
 const generateGridItems = async (startIndex, endIndex) => {
   // Predefined image heights for variety
   const imgHeights = GRID_ITEM_HEIGHTS;
 
+  // Fetch random images from the Unsplash API
+  images = await fetchRandomImages(page);
+  page++;
+
   // Using Promise.all to create all the grid items asynchronously
   const newDivs = await Promise.all(
-    Array.from({ length: endIndex - startIndex }, (_, index) => {
+    images.map((image, index) => {
       // Calculate the item index based on the current loop index
       const itemIndex = startIndex + index;
-
-      // const imageUrl =
-      // Math.random() < 0.5
-      //   ? `https://source.unsplash.com/random/400x${imgHeight}?sig=${randomImgID}`
-      //   : `https://picsum.photos/400/${imgHeight}?random=${randomImgID}?grayscale`;
-
-      // const imageUrl = `https://picsum.photos/id/${itemIndex}/400/${imgHeight}`;
 
       // Randomly choose an image height from the imgHeights array
       const randomIndex = Math.floor(Math.random() * imgHeights.length);
       const imgHeight = imgHeights[randomIndex];
 
-      // Generate a random image ID to avoid caching issues
-      const randomImgID = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER ** Math.random());
-
-      // Generate the image URL using Unsplash with random signature for uniqueness
-      const imageUrl = `https://source.unsplash.com/400x${imgHeight}?sig=${itemIndex}`;
+      const imageUrl = image.urls.regular;
 
       // Generate a random number of tags for the current image (minimum 3)
       const numberOfTags = Math.floor(Math.random() * 3) + 3;
@@ -66,6 +69,8 @@ const generateGridItems = async (startIndex, endIndex) => {
       img.src = imageUrl;
       img.loading = "lazy";
       img.style.height = `${imgHeight}px`;
+      let imgWidth = 400;
+      img.style.width = `${imgWidth}px`;
 
       div.appendChild(img);
 
@@ -86,7 +91,9 @@ const generateGridItems = async (startIndex, endIndex) => {
           commentary,
           author,
           itemIndex,
-          randomTags
+          randomTags,
+          imgHeight,
+          imgWidth
         });
       });
 
@@ -96,6 +103,7 @@ const generateGridItems = async (startIndex, endIndex) => {
 
   return newDivs;
 };
+
 
 // Function to get random tags from the Tags array
 const getRandomTags = (numberOfTags) => {
@@ -139,9 +147,11 @@ const initializeMasonryLayout = () => {
 
 // Function to generate and append grid items
 const generateAndAppendGridItems = async () => {
+  if (!isFiltering) {
   const startIndex = divs.length;
   const endIndex = startIndex + randomArrayLength;
   const newDivs = await generateGridItems(startIndex, endIndex);
+
 
   newDivs.forEach((div) => {
     // Store the randomTags property in the div element
@@ -159,6 +169,7 @@ const generateAndAppendGridItems = async () => {
   const lastGridChild = grid.lastElementChild;
   if (lastGridChild) {
     observer.observe(lastGridChild);
+    }
   }
 };
 
@@ -175,13 +186,16 @@ const imageComments = [];
 // Function to open the image modal and display image details
 const openImageModal = (imageData) => {
   // Extracting image data from the parameter
-  const { imageUrl, title, commentary, author, itemIndex, randomTags } = imageData;
+  const { imageUrl, title, commentary, author, itemIndex, randomTags, imgHeight, imgWidth } = imageData;
   currentImageIndex = itemIndex;
 
   // Update the modal with the selected image and details
   modalImageContainer.style.display = "block";
   modalImage.style.display = "none";
   modalImage.setAttribute("src", imageUrl);
+  modalImage.style.height = '400px';
+  modalImage.style.width = `${imgWidth}px`;
+
 
   document.querySelector(".modal-title").textContent = title;
   document.querySelector(".modal-commentary").textContent = commentary;
@@ -263,7 +277,6 @@ const displayTags = (tags) => {
     tagSpan.classList.add("tags")
     tagSpan.textContent = "#" + tag.toLowerCase().trim(); // Add '#' before each tag
     tagsContainer.appendChild(tagSpan);
-
     tagSpan.addEventListener("click", handleTagClick);   
   });
 };
@@ -357,17 +370,20 @@ downloadButtons.forEach((button) => {
     event.preventDefault();
     const gridItem = event.currentTarget.closest(".modal-flex-container");
     const img = gridItem.querySelector("img");
-    const imageUrl = img.getAttribute("src");
+    //const imageUrl = img.getAttribute("src");
+    const imageUrl = images[currentImageIndex].urls.full;
 
     const link = document.createElement("a");
     link.href = imageUrl;
-    link.download = "";
+    link.download = 'image.jpg';
     link.target = "_blank";
     document.body.appendChild(link);
 
     link.click();
 
-    document.body.removeChild(link);
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
   });
 });
 
@@ -381,6 +397,8 @@ modalContainer.addEventListener("click", (event) => {
 
   const navigateToIndex = (newIndex) => {
     if (newIndex !== -1) {
+      const imageElement = divs[newIndex].querySelector("img");
+
       const newImageData = {
         imageUrl: divs[newIndex].querySelector("img").getAttribute("src"),
         title: divs[newIndex].querySelector("h3").textContent,
@@ -388,6 +406,8 @@ modalContainer.addEventListener("click", (event) => {
         author: Authors[newIndex % Authors.length],
         itemIndex: newIndex,
         randomTags: divs[newIndex].randomTags,
+        imgHeight: imageElement.height,
+        imgWidth: imageElement.width,
       };
       openImageModal(newImageData);
     }
@@ -574,6 +594,8 @@ let searchTimeout;
 const performImageSearch = (selectedCategory) => {
   const searchQuery = searchInput.value.trim().toLowerCase();
   let filteredImages;
+  isFiltering = true;
+
 
   if (selectedCategory) {
     // Tag-based search
@@ -611,6 +633,8 @@ const performImageSearch = (selectedCategory) => {
 
   initializeMasonryLayout();
   enableClearButton(selectedCategory || searchQuery !== "");
+  observer.observe(grid.lastElementChild);
+
 };
 
 
@@ -636,6 +660,8 @@ const clearSearchResults = () => {
   });
 
   initializeMasonryLayout();
+  isFiltering = false;
+  observer.observe(grid.lastElementChild);
 };
 
 // Function to enable or disable the "Clear" button based on the filter status
