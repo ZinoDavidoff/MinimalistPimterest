@@ -577,37 +577,6 @@ textarea::-webkit-scrollbar-thumb {
   transform: translate(-50%, -50%);
 }
 
-#selected-tag-container {
-  position: fixed;
-  top: 1.5rem;
-  left: 50%;
-  padding: 5px 10px;
-  background-color: #f3f3f3;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-  color: #333;
-  visibility: hidden;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-}
-
-.remove-tag {
-  font-size: 14px;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  background-color: transparent;
-  font-family: cursive;
-  margin-left: .25rem;
-  transition: color 0.3s ease;
-}
-
-.remove-tag:hover {
-  color: red;
-}
-
 .modal-close-button-1 {
   display: none;
 }
@@ -643,7 +612,6 @@ textarea::-webkit-scrollbar-thumb {
   
   #modal-image {
     margin-left: -4rem;
-    transform: translateX(-1px);
   }
   
   .modal-info {
