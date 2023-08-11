@@ -12,10 +12,10 @@ const IMAGE_SEARCH_DELAY = 500;
 const grid = document.querySelector(".masonry-grid");
 let masonry;
 let divs = [];
-let filteredDivs = []; // An array to store the filtered images
 let currentImageIndex;
 let page = 1;
 let isFiltering = false;
+let userSearchQuery = "random";
 
 // Function to generate a random number within a range (min, max)
 const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -24,25 +24,21 @@ const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max 
 const randomArrayLength = generateRandomArrayLength(RANDOM_ARRAY_MIN_LENGTH, RANDOM_ARRAY_MAX_LENGTH);
 
 // Function to fetch random images from a URL
-const fetchRandomImages = async (page) => {
-  const accessKey = 'YnR1e5ZmxDeQ6WacDQVNIJW8UcyB_tMawKEI9EnSyRc';
-  const response = await fetch(`https://api.unsplash.com/search/photos?query=random&client_id=${accessKey}&page=${page}&per_page=${randomArrayLength}`);
+const fetchRandomImages = async (page, query) => {
+  const accessKey = 'wOnG-DUMQ-Jtyvv3xk8-x9DAyx4k5HU2m7Eu3WsskLI';
+  const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${randomArrayLength}`);
   const data = await response.json();
   return data.results;
 }
 
 // Function to generate grid items asynchronously within a given index range
-const generateGridItems = async (startIndex, endIndex) => {
+const generateGridItems = async (startIndex, endIndex, images) => {
   // Predefined image heights for variety
   const imgHeights = GRID_ITEM_HEIGHTS;
 
-  // Fetch random images from the Unsplash API
-  const images = await fetchRandomImages(page);
-  page++;
-
   // Using Promise.all to create all the grid items asynchronously
   const newDivs = await Promise.all(
-    images.map((image, index) => {
+    Array.from(images, async (image, index) => {
       // Calculate the item index based on the current loop index
       const itemIndex = startIndex + index;
 
@@ -145,12 +141,13 @@ const initializeMasonryLayout = () => {
 };
 
 // Function to generate and append grid items
-const generateAndAppendGridItems = async () => {
-  if (!isFiltering) {
+const generateAndAppendGridItems = async (searchQuery = userSearchQuery) => {
   const startIndex = divs.length;
   const endIndex = startIndex + randomArrayLength;
-  const newDivs = await generateGridItems(startIndex, endIndex);
-
+  const images = await fetchRandomImages(page, searchQuery);
+  page++;
+  
+  const newDivs = await generateGridItems(startIndex, endIndex, images);
 
   newDivs.forEach((div) => {
     // Store the randomTags property in the div element
@@ -169,7 +166,6 @@ const generateAndAppendGridItems = async () => {
   if (lastGridChild) {
     observer.observe(lastGridChild);
     }
-  }
 };
 
 // Modal-related DOM Elements
@@ -207,6 +203,7 @@ const openImageModal = (imageData) => {
   const adjustModalImageContainer = () => {
     if (window.matchMedia("(max-width: 1135px)").matches) {
       modalImageContainer.style.display = 'block';
+      modalImageContainer.style.width = '0px';
     } else {
       modalImageContainer.style.display = "none";
     }
@@ -228,7 +225,6 @@ const openImageModal = (imageData) => {
   // Get the tags for the current image
   displayTags(randomTags);
 
-
   // Update the navigation buttons and other UI elements
   prevButton.style.display = currentImageIndex === 0 ? "none" : "block";
 
@@ -236,34 +232,6 @@ const openImageModal = (imageData) => {
   updateSendButtonState();
   checkModeClassInComments();
   searchContainer.style.display = "none";
-};
-
-// Function to handle tag click event and perform image filtering
-const handleTagClick = (event) => {
-  const clickedTag = event.target.textContent.slice(1).toLowerCase(); // Remove the '#' from the tag
-  performImageSearch(clickedTag);
-
-  // Update the displayed tag in the selected-tag-container
-  const selectedTagContainer = document.getElementById("selected-tag-container");
-  selectedTagContainer.innerHTML = `Filter by: #${clickedTag}`;
-  selectedTagContainer.style.visibility = "visible";
-  const tagSpan = document.createElement("span");
-  selectedTagContainer.appendChild(tagSpan);
-  tagSpan.textContent = "X";
-  tagSpan.classList.add("remove-tag");
-  enableClearButton(false); // Disable the "Clear" button after clearing the search
-  clearButton.style.cursor = "not-allowed";
-  tagSpan.addEventListener("click", () => {
-    // Your event handling code goes here
-    selectedTagContainer.textContent = "";
-    selectedTagContainer.style.visibility = "hidden";
-    searchInput.value = ""; // Clear the search input field
-    clearSearchResults();   // Clear the search results and display all images
-    enableSearchInput();
-    clearButton.style.cursor = "pointer";
-    filteredDivs = [];
-  });
-  selectedTagContainer.appendChild(tagSpan);
 };
 
 // Function to display tags in the modal
@@ -276,7 +244,6 @@ const displayTags = (tags) => {
     tagSpan.classList.add("tags")
     tagSpan.textContent = "#" + tag.toLowerCase().trim(); // Add '#' before each tag
     tagsContainer.appendChild(tagSpan);
-    tagSpan.addEventListener("click", handleTagClick);   
   });
 };
 
@@ -390,8 +357,6 @@ const prevButton = modalContainer.querySelector(".modal-arrow-button.prev");
 modalContainer.addEventListener("click", (event) => {
   event.stopPropagation();
   const clickedElement = event.target;
-  const filtersApplied = filteredDivs.length > 0;
-  const currentIndexInFilteredDivs = filtersApplied ? filteredDivs.indexOf(divs[currentImageIndex]) : -1;
 
   const navigateToIndex = (newIndex) => {
     if (newIndex !== -1) {
@@ -413,27 +378,35 @@ modalContainer.addEventListener("click", (event) => {
 
   switch (true) {
     case clickedElement.classList.contains("prev"):
-      if (filtersApplied && currentIndexInFilteredDivs > 0) {
-        navigateToIndex(divs.indexOf(filteredDivs[currentIndexInFilteredDivs - 1]));
-      } else if (!filtersApplied && currentImageIndex > 0) {
+      if (isFiltering) {
+        if (currentImageIndex > 0) {
+          navigateToIndex(currentImageIndex - 1);
+        }
+      } else if (currentImageIndex > 0) {
         navigateToIndex(currentImageIndex - 1);
       }
       break;
-
+  
     case clickedElement.classList.contains("next"):
-      if (filtersApplied && currentIndexInFilteredDivs < filteredDivs.length - 1) {
-        navigateToIndex(divs.indexOf(filteredDivs[currentIndexInFilteredDivs + 1]));
-      } else if (!filtersApplied && currentImageIndex < divs.length - 1) {
+      if (isFiltering) {
+        if (currentImageIndex < divs.length - 1) {
+          navigateToIndex(currentImageIndex + 1);
+          if (currentImageIndex === divs.length - 1) {
+            generateAndAppendGridItems();
+          }
+        }
+      } else if (currentImageIndex < divs.length - 1) {
         navigateToIndex(currentImageIndex + 1);
         if (currentImageIndex === divs.length - 1) {
           generateAndAppendGridItems();
         }
       }
       break;
-
+  
     default:
       break;
   }
+  
 
   updateSendButtonState();
 });
@@ -588,74 +561,58 @@ darkModeToggle.addEventListener('change', checkModeClassInComments);
 const searchInput = document.getElementById("search-input");
 let searchTimeout;
 
-// Function to perform image search based on the search query
-const performImageSearch = (selectedCategory) => {
-  const searchQuery = searchInput.value.trim().toLowerCase();
-  let filteredImages;
-  isFiltering = true;
+// Event listener for the input event on the search input field
+searchInput.addEventListener("input", async () => {
+  clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(async () => {
+    const newSearchQuery = searchInput.value.trim();
+
+    userSearchQuery = searchInput.value.trim();
+    isFiltering = newSearchQuery !== ""; // Update the filtering state
+
+    if (isFiltering) {
+      userSearchQuery = newSearchQuery;
+    } else {
+      userSearchQuery = "random"; // Return to random query when search is cleared or empty
+    }
+
+    grid.innerHTML = "";
+    try {
+      const newImages = await fetchRandomImages(1, userSearchQuery);
+      const newDivs = await generateGridItems(0, newImages.length, newImages);
+      divs = newDivs
+      appendGridItems(newDivs);
+      initializeMasonryLayout();
+      observer.observe(grid.lastElementChild);
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    }
+
+    updateClearButtonState(userSearchQuery);
+    updateSearchPlaceholder();
+    scrollToTop(); // Scroll smoothly to the top of the page
+
+  }, IMAGE_SEARCH_DELAY);
+});
 
 
-  if (selectedCategory) {
-    // Tag-based search
-    closeImageModal();
-    searchInput.value = ""; // Clear the search input field
-    filteredImages = divs.filter((div) => {
-      const tags = div.randomTags.map((tag) => tag.toLowerCase());
-      return tags.includes(selectedCategory);
-    });
-    disableSearchInput();
-  } else {
-    // Title-based search
-    filteredImages = divs.filter((div) => {
-      const title = div.querySelector("h3").textContent.toLowerCase();
-      return title.includes(searchQuery);
-    });
-    enableSearchInput();
-  }
-
-  filteredDivs = filteredImages;
-
-  grid.innerHTML = "";
-
-  if (filteredImages.length > 0) {
-    filteredImages.forEach((div) => {
-      grid.appendChild(div);
-    });
-  } else {
-    // Display "No content found" message
-    const noContentMessage = document.createElement("h3");
-    noContentMessage.textContent = "No content found";
-    noContentMessage.classList.add("no-content-message");
-    grid.appendChild(noContentMessage);
-  }
-
-  initializeMasonryLayout();
-  enableClearButton(selectedCategory || searchQuery !== "");
-  observer.observe(grid.lastElementChild);
-
+const updateClearButtonState = (query) => {
+  clearButton.disabled = query === "";
 };
 
 
-// Event listener for the input event on the search input field
-searchInput.addEventListener("input", () => {
-  // Clear previous timeout (if any) to avoid unnecessary calls
-  clearTimeout(searchTimeout);
-
-  // Set a new timeout to perform the search after a delay
-  searchTimeout = setTimeout(() => {
-    const searchQuery = searchInput.value.trim().toLowerCase();
-    // Perform tag-based search if searchQuery is not empty, otherwise perform title-based search
-    performImageSearch(searchQuery === "" ? searchQuery : undefined);
-    }, IMAGE_SEARCH_DELAY);
-});
-
 // Function to clear the search results and display all images
-const clearSearchResults = () => {
+const clearSearchResults = async () => {
   grid.innerHTML = "";
 
-  divs.forEach((div) => {
-    grid.appendChild(div);
-  });
+  userSearchQuery = "random";
+
+  try {
+    await generateAndAppendGridItems();
+  } catch (error) {
+    console.error("Error fetching images:", error);
+  }
 
   initializeMasonryLayout();
   isFiltering = false;
@@ -670,25 +627,28 @@ const enableClearButton = (enable) => {
 // Clear the search input field and perform a new search when the "Clear" button is clicked
 const clearButton = document.getElementById("clear-button");
 
-clearButton.addEventListener("click", () => {
+clearButton.addEventListener("click", async () => {
   searchInput.value = ""; // Clear the search input field
   clearSearchResults();   // Clear the search results and display all images
   enableSearchInput();
   enableClearButton(false); // Disable the "Clear" button after clearing the search
+
+  page = 1;
+  divs = [];
+
+  try {
+    await generateAndAppendGridItems("random");
+  } catch (error) {
+    console.error("Error fetching images:", error);
+  }
+
+  scrollToTop(); // Scroll smoothly to the top of the page
 });
 
 // Function to update the search input placeholder
 const updateSearchPlaceholder = () => {
   // Check if the search input is disabled (filters applied)
   searchInput.placeholder = searchInput.disabled ? "Clear filters" : "Search by title";
-};
-
-// Function to disable the search input
-const disableSearchInput = () => {
-  searchInput.classList.add('disable-input');
-  searchInput.disabled = true;
-  updateSearchPlaceholder();
-  scrollToTop(); // Scroll smoothly to the top of the page when filters are applied
 };
 
 // Function to enable the search input
