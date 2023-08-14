@@ -1,12 +1,8 @@
-import { Commentaries } from "./commentaries.js";
-import { Authors } from "./authors.js";
-import { Tags } from "./tags.js";
-
 // Constants
 const GRID_ITEM_HEIGHTS = [200, 250, 300, 350, 400];
-const RANDOM_ARRAY_MIN_LENGTH = 50;
-const RANDOM_ARRAY_MAX_LENGTH = 100;
+const IMAGE_PER_PAGE = 30;
 const IMAGE_SEARCH_DELAY = 500;
+const IMAGE_WIDTH = 400;
 
 // DOM Elements
 const grid = document.querySelector(".masonry-grid");
@@ -17,17 +13,12 @@ let page = 1;
 let isFiltering = false;
 let userSearchQuery = "random";
 
-// Function to generate a random number within a range (min, max)
-const generateRandomArrayLength = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-// Generating a random array length within the range [50, 100]
-const randomArrayLength = generateRandomArrayLength(RANDOM_ARRAY_MIN_LENGTH, RANDOM_ARRAY_MAX_LENGTH);
-
 // Function to fetch random images from a URL
 const fetchRandomImages = async (page, query) => {
-  const accessKey = 'wOnG-DUMQ-Jtyvv3xk8-x9DAyx4k5HU2m7Eu3WsskLI';
-  const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${randomArrayLength}`);
+  const accessKey = 'ivYldu84VM4B8w3kV_lvqa_BGQFfs0PQBPbVM0QnjW0';
+  const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${IMAGE_PER_PAGE}`);
   const data = await response.json();
+  console.log(data);
   return data.results;
 }
 
@@ -48,24 +39,16 @@ const generateGridItems = async (startIndex, endIndex, images) => {
 
       const imageUrl = image.urls.regular;
 
-      // Generate a random number of tags for the current image (minimum 3)
-      const numberOfTags = Math.floor(Math.random() * 3) + 3;
-
-      // Get random tags from the Tags array
-      const randomTags = getRandomTags(numberOfTags);
-
       // Create the div element for the grid item
       const div = document.createElement("div");
       div.classList.add("grid-item");
-      div.randomTags = randomTags;
 
       // Create and set the image element for the grid item
       const img = document.createElement("img");
       img.src = imageUrl;
       img.loading = "lazy";
       img.style.height = `${imgHeight}px`;
-      let imgWidth = 400;
-      img.style.width = `${imgWidth}px`;
+      img.style.width = `${IMAGE_WIDTH}px`;
 
       div.appendChild(img);
 
@@ -75,8 +58,13 @@ const generateGridItems = async (startIndex, endIndex, images) => {
       div.appendChild(h3);
 
       // Get the commentary and author data for the image
-      const commentary = Commentaries[itemIndex % Commentaries.length];
-      const author = Authors[itemIndex % Authors.length];
+      const commentary = image.alt_description;
+      const author = image.user.username;
+      const tags = image.tags.map(tag => tag.title);
+
+      img.setAttribute("data-author", image.user.username);
+      img.setAttribute("data-commentary", image.alt_description);
+      div.setAttribute("data-tags", JSON.stringify(tags));
 
       // Add a click event listener to open the image modal on click
       div.addEventListener("click", () => {
@@ -86,9 +74,7 @@ const generateGridItems = async (startIndex, endIndex, images) => {
           commentary,
           author,
           itemIndex,
-          randomTags,
-          imgHeight,
-          imgWidth
+          tags
         });
       });
 
@@ -99,28 +85,6 @@ const generateGridItems = async (startIndex, endIndex, images) => {
   return newDivs;
 };
 
-
-// Function to get random tags from the Tags array
-const getRandomTags = (numberOfTags) => {
-  const availableTags = Tags.slice(); // Create a copy of the Tags array
-  const randomTags = [];
-
-  for (let i = 0; i < numberOfTags; i++) {
-    if (availableTags.length === 0) {
-      // If all available tags have been used, break the loop
-      break;
-    }
-
-    // Generate a random index to select a tag
-    const randomIndex = Math.floor(Math.random() * availableTags.length);
-    // Remove the selected tag from the availableTags array to avoid duplicates
-    const selectedTag = availableTags.splice(randomIndex, 1)[0];
-    // Push the selected tag to the randomTags array
-    randomTags.push(selectedTag);
-  }
-
-  return randomTags;
-};
 
 // Function to append the new grid items to the grid
 const appendGridItems = (newDivs) => {
@@ -143,15 +107,13 @@ const initializeMasonryLayout = () => {
 // Function to generate and append grid items
 const generateAndAppendGridItems = async (searchQuery = userSearchQuery) => {
   const startIndex = divs.length;
-  const endIndex = startIndex + randomArrayLength;
+  const endIndex = startIndex + IMAGE_PER_PAGE;
   const images = await fetchRandomImages(page, searchQuery);
   page++;
   
   const newDivs = await generateGridItems(startIndex, endIndex, images);
 
   newDivs.forEach((div) => {
-    // Store the randomTags property in the div element
-    div.randomTags = div.randomTags || getRandomTags(3); // If randomTags is undefined, assign new tags
     grid.appendChild(div);
   });
 
@@ -181,20 +143,23 @@ const imageComments = [];
 // Function to open the image modal and display image details
 const openImageModal = (imageData) => {
   // Extracting image data from the parameter
-  const { imageUrl, title, commentary, author, itemIndex, randomTags, imgHeight, imgWidth } = imageData;
+  const { imageUrl, title, commentary, author, itemIndex, tags } = imageData;
   currentImageIndex = itemIndex;
+
+  const formattedCommentary = commentary.charAt(0).toUpperCase() + commentary.slice(1);
 
   // Update the modal with the selected image and details
   modalImageContainer.style.display = "block";
   modalImage.style.display = "none";
   modalImage.setAttribute("src", imageUrl);
-  modalImage.style.height = '400px';
-  modalImage.style.width = `${imgWidth}px`;
+  modalImage.style.height = `${IMAGE_WIDTH}px`;
+  modalImage.style.width = `${IMAGE_WIDTH}px`;
 
 
   document.querySelector(".modal-title").textContent = title;
-  document.querySelector(".modal-commentary").textContent = commentary;
+  document.querySelector(".modal-commentary").textContent = formattedCommentary;
   document.querySelector(".modal-author").textContent = author;
+  document.querySelector(".modal-tags").textContent = tags;
   modalOverlay.classList.add("open");
   modalContainer.classList.add("scaleImg");
   grid.style.filter = "blur(10px)";
@@ -223,7 +188,8 @@ const openImageModal = (imageData) => {
   displayComments(commentsForImage);
 
   // Get the tags for the current image
-  displayTags(randomTags);
+  displayTags(tags);
+  addTagEventListeners()
 
   // Update the navigation buttons and other UI elements
   prevButton.style.display = currentImageIndex === 0 ? "none" : "block";
@@ -244,6 +210,27 @@ const displayTags = (tags) => {
     tagSpan.classList.add("tags")
     tagSpan.textContent = "#" + tag.toLowerCase().trim(); // Add '#' before each tag
     tagsContainer.appendChild(tagSpan);
+  });
+};
+
+const addTagEventListeners = () => {
+  // Select all tag elements within the modal
+  const tagElements = document.querySelectorAll(".tags");
+
+  // Add event listener to each tag
+  tagElements.forEach((tagElement) => {
+    tagElement.addEventListener("click", () => {
+      // Extract the tag text (remove the "#" character)
+      const selectedTag = tagElement.textContent.trim().substring(1);
+
+      // Set the selected tag as the value of the search input
+      searchInput.value = selectedTag;
+
+      // Trigger a search based on the selected tag
+      const inputEvent = new Event("input");
+      searchInput.dispatchEvent(inputEvent);
+      closeImageModal();
+    });
   });
 };
 
@@ -361,14 +348,15 @@ modalContainer.addEventListener("click", (event) => {
   const navigateToIndex = (newIndex) => {
     if (newIndex !== -1) {
       const imageElement = divs[newIndex].querySelector("img");
+      const tagsDataAttribute = divs[newIndex].getAttribute("data-tags");
 
       const newImageData = {
         imageUrl: divs[newIndex].querySelector("img").getAttribute("src"),
         title: divs[newIndex].querySelector("h3").textContent,
-        commentary: Commentaries[newIndex % Commentaries.length],
-        author: Authors[newIndex % Authors.length],
+        commentary: imageElement.getAttribute("data-commentary"),
+        author: imageElement.getAttribute("data-author"), 
         itemIndex: newIndex,
-        randomTags: divs[newIndex].randomTags,
+        tags: JSON.parse(tagsDataAttribute),
         imgHeight: imageElement.height,
         imgWidth: imageElement.width,
       };
@@ -406,12 +394,9 @@ modalContainer.addEventListener("click", (event) => {
     default:
       break;
   }
-  
 
   updateSendButtonState();
 });
-
-
 
 const commentaryField = document.getElementById("commentary-field");
 const sendButton = document.getElementById("send-button");
@@ -590,8 +575,9 @@ searchInput.addEventListener("input", async () => {
     }
 
     updateClearButtonState(userSearchQuery);
-    updateSearchPlaceholder();
     scrollToTop(); // Scroll smoothly to the top of the page
+
+    toggleNoContentMessage(divs.length === 0 && isFiltering);
 
   }, IMAGE_SEARCH_DELAY);
 });
@@ -605,7 +591,6 @@ const updateClearButtonState = (query) => {
 // Function to clear the search results and display all images
 const clearSearchResults = async () => {
   grid.innerHTML = "";
-
   userSearchQuery = "random";
 
   try {
@@ -619,19 +604,12 @@ const clearSearchResults = async () => {
   observer.observe(grid.lastElementChild);
 };
 
-// Function to enable or disable the "Clear" button based on the filter status
-const enableClearButton = (enable) => {
-  clearButton.disabled = !enable;
-};
-
 // Clear the search input field and perform a new search when the "Clear" button is clicked
 const clearButton = document.getElementById("clear-button");
 
 clearButton.addEventListener("click", async () => {
   searchInput.value = ""; // Clear the search input field
   clearSearchResults();   // Clear the search results and display all images
-  enableSearchInput();
-  enableClearButton(false); // Disable the "Clear" button after clearing the search
 
   page = 1;
   divs = [];
@@ -644,19 +622,6 @@ clearButton.addEventListener("click", async () => {
 
   scrollToTop(); // Scroll smoothly to the top of the page
 });
-
-// Function to update the search input placeholder
-const updateSearchPlaceholder = () => {
-  // Check if the search input is disabled (filters applied)
-  searchInput.placeholder = searchInput.disabled ? "Clear filters" : "Search by title";
-};
-
-// Function to enable the search input
-const enableSearchInput = () => {
-  searchInput.classList.remove('disable-input');
-  searchInput.disabled = false;
-  updateSearchPlaceholder();
-};
 
 // Function to scroll smoothly to the top of the page
 const scrollToTop = () => {
@@ -686,3 +651,8 @@ scrollToTopButton.addEventListener('click', scrollToTop);
 if (window.matchMedia("(max-width: 1135px)").matches) {
   modalImageContainer.style.display = 'block'
 }
+
+const toggleNoContentMessage = (show) => {
+  const noContentMessage = document.querySelector(".no-content-message");
+  noContentMessage.style.display = show ? "block" : "none";
+};
