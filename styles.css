@@ -275,6 +275,22 @@ body {
   margin-right: 3rem;
 }
 
+.modal-author::before {
+  content: '\201C';
+}
+
+.modal-author::after {
+  content: '\201D';
+}
+
+.modal-author::before,
+.modal-author::after {
+  display: inline-block;
+  color: #1da1f2;
+  font-size: 16px;
+  position: relative;
+}
+
 .modal-arrow-button {
   position: absolute;
   z-index: 2;
@@ -523,7 +539,7 @@ textarea::-webkit-scrollbar-thumb {
 }
 
 #clear-button:hover {
-  color: red;
+  color: #1da1f2;
 }
 
 .tags {
@@ -571,6 +587,7 @@ textarea::-webkit-scrollbar-thumb {
 }
 
 .no-content-message {
+  display: none;
   position: absolute;
   top: calc(100vh / 2);
   left: 50%;
