@@ -594,6 +594,8 @@ const clearSearchResults = async () => {
   userSearchQuery = "random";
 
   try {
+    page = 1;
+    divs = [];
     await generateAndAppendGridItems();
   } catch (error) {
     console.error("Error fetching images:", error);
@@ -608,19 +610,18 @@ const clearSearchResults = async () => {
 const clearButton = document.getElementById("clear-button");
 
 clearButton.addEventListener("click", async () => {
-  searchInput.value = ""; // Clear the search input field
-  clearSearchResults();   // Clear the search results and display all images
+  if (searchInput.value.trim() !== "") {
+    searchInput.value = ""; // Clear the search input field
+    clearSearchResults();   // Clear the search results and display all images
 
-  page = 1;
-  divs = [];
+    try {
+      await generateAndAppendGridItems("random");
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    }
 
-  try {
-    await generateAndAppendGridItems("random");
-  } catch (error) {
-    console.error("Error fetching images:", error);
+    scrollToTop(); // Scroll smoothly to the top of the page
   }
-
-  scrollToTop(); // Scroll smoothly to the top of the page
 });
 
 // Function to scroll smoothly to the top of the page
