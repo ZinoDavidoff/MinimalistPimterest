@@ -1,5 +1,5 @@
 // Constants
-const GRID_ITEM_HEIGHTS = [200, 250, 300, 350, 400];
+const GRID_ITEM_HEIGHTS = [250, 300, 350, 400];
 const IMAGE_PER_PAGE = 30;
 const IMAGE_SEARCH_DELAY = 500;
 const IMAGE_WIDTH = 400;
@@ -54,15 +54,15 @@ const generateGridItems = async (startIndex, endIndex, images) => {
 
       // Create and set the h3 element for the grid item
       const h3 = document.createElement("h3");
-      h3.textContent = `Image ${itemIndex + 1}`;
+      h3.textContent = `${itemIndex + 1} - ${image.alt_description}`;
       div.appendChild(h3);
 
       // Get the commentary and author data for the image
       const commentary = image.alt_description;
-      const author = image.user.username;
+      const author = image.user.name;
       const tags = image.tags.map(tag => tag.title);
 
-      img.setAttribute("data-author", image.user.username);
+      img.setAttribute("data-author", image.user.name);
       img.setAttribute("data-commentary", image.alt_description);
       div.setAttribute("data-tags", JSON.stringify(tags));
 
@@ -156,7 +156,7 @@ const openImageModal = (imageData) => {
   modalImage.style.width = `${IMAGE_WIDTH}px`;
 
 
-  document.querySelector(".modal-title").textContent = title;
+  document.querySelector(".modal-title").textContent = `Image ${itemIndex + 1}`;
   document.querySelector(".modal-commentary").textContent = formattedCommentary;
   document.querySelector(".modal-author").textContent = author;
   document.querySelector(".modal-tags").textContent = tags;
