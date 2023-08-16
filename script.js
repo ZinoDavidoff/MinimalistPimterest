@@ -18,33 +18,33 @@ const seasons = ["winter", "spring", "summer", "autumn"];
 
 const getCurrentSeason = () => {
   const currentDate = new Date();
-  const month = currentDate.getMonth();
+  const month = currentDate.getMonth() + 1;
 
   switch (month) {
-    case 11: // December
-    case 0:  // January
-    case 1:  // February
+    case 12: // December
+    case 1:  // January
+    case 2:  // February
       return "winter";
-    case 2:  // March
-    case 3:  // April
-    case 4:  // May
+    case 3:  // March
+    case 4:  // April
+    case 5:  // May
       return "spring";
-    case 5:  // June
-    case 6:  // July
-    case 7:  // August
+    case 6:  // June
+    case 7:  // July
+    case 8:  // August
       return "summer";
-    case 8:  // September
-    case 9:  // October
-    case 10: // November
+    case 9:  // September
+    case 10:  // October
+    case 11: // November
       return "autumn";
     default:
-      return "unknown"; // Handle unexpected cases
+      return "random";
   }
 };
 
 // Function to fetch random images from a URL
 const fetchRandomImages = async (page, query) => {
-  const accessKey = 'ivYldu84VM4B8w3kV_lvqa_BGQFfs0PQBPbVM0QnjW0';
+  const accessKey = 'aa56xD0OIhaIDLxDNRbawHIj8NAZ6H6yzuN1OwEjGGs';
   const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${IMAGE_PER_PAGE}`);
   const data = await response.json();
   isResultsEmpty = data.results.length === 0 ? true : false;
@@ -588,7 +588,7 @@ searchInput.addEventListener("input", async () => {
     if (isFiltering) {
       userSearchQuery = newSearchQuery;
     } else {
-      userSearchQuery = getCurrentSeason(); 
+      userSearchQuery = getCurrentSeason(); // Return to random query when search is cleared or empty
     }
 
     grid.innerHTML = "";
@@ -620,7 +620,7 @@ const updateClearButtonState = (query) => {
 // Function to clear the search results and display all images
 const clearSearchResults = async () => {
   grid.innerHTML = "";
-  userSearchQuery = getCurrentSeason();
+  userSearchQuery = getCurrentSeason(); // Return to random query when search is cleared or empty
 
   try {
     page = 1;
@@ -633,6 +633,7 @@ const clearSearchResults = async () => {
   initializeMasonryLayout();
   isFiltering = false;
   observer.observe(grid.lastElementChild);
+  console.log(userSearchQuery)
 };
 
 // Clear the search input field and perform a new search when the "Clear" button is clicked
@@ -642,13 +643,23 @@ clearButton.addEventListener("click", async () => {
   if (searchInput.value.trim() !== "") {
     searchInput.value = ""; // Clear the search input field
     clearSearchResults();   // Clear the search results and display all images
+
+    try {
+      await generateAndAppendGridItems();
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    }
+
     scrollToTop(); // Scroll smoothly to the top of the page
   }
 });
 
 // Function to scroll smoothly to the top of the page
 const scrollToTop = () => {
-  window.scrollTo(0, 0);
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
 };
 
 const showScrollToTopButton = () => {
