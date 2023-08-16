@@ -12,7 +12,35 @@ let currentImageIndex;
 let page = 1;
 let isFiltering = false;
 let isResultsEmpty = false;
-let userSearchQuery = "random";
+let userSearchQuery;
+
+const seasons = ["winter", "spring", "summer", "autumn"];
+
+const getCurrentSeason = () => {
+  const currentDate = new Date();
+  const month = currentDate.getMonth();
+
+  switch (month) {
+    case 11: // December
+    case 0:  // January
+    case 1:  // February
+      return "winter";
+    case 2:  // March
+    case 3:  // April
+    case 4:  // May
+      return "spring";
+    case 5:  // June
+    case 6:  // July
+    case 7:  // August
+      return "summer";
+    case 8:  // September
+    case 9:  // October
+    case 10: // November
+      return "autumn";
+    default:
+      return "unknown"; // Handle unexpected cases
+  }
+};
 
 // Function to fetch random images from a URL
 const fetchRandomImages = async (page, query) => {
@@ -105,7 +133,8 @@ const initializeMasonryLayout = () => {
 };
 
 // Function to generate and append grid items
-const generateAndAppendGridItems = async (searchQuery = userSearchQuery) => {
+const generateAndAppendGridItems = async () => {
+  const searchQuery = isFiltering ? userSearchQuery : getCurrentSeason();
   const startIndex = divs.length;
   const endIndex = startIndex + IMAGE_PER_PAGE;
   const images = await fetchRandomImages(page, searchQuery);
@@ -559,7 +588,7 @@ searchInput.addEventListener("input", async () => {
     if (isFiltering) {
       userSearchQuery = newSearchQuery;
     } else {
-      userSearchQuery = "random"; // Return to random query when search is cleared or empty
+      userSearchQuery = getCurrentSeason(); 
     }
 
     grid.innerHTML = "";
@@ -591,7 +620,7 @@ const updateClearButtonState = (query) => {
 // Function to clear the search results and display all images
 const clearSearchResults = async () => {
   grid.innerHTML = "";
-  userSearchQuery = "random";
+  userSearchQuery = getCurrentSeason();
 
   try {
     page = 1;
