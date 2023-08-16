@@ -578,6 +578,7 @@ let searchTimeout;
 // Event listener for the input event on the search input field
 searchInput.addEventListener("input", async () => {
   clearTimeout(searchTimeout);
+  scrollToTop(); // Scroll smoothly to the top of the page
 
   searchTimeout = setTimeout(async () => {
     const newSearchQuery = searchInput.value.trim();
@@ -604,7 +605,6 @@ searchInput.addEventListener("input", async () => {
     }
 
     updateClearButtonState(userSearchQuery);
-    scrollToTop(); // Scroll smoothly to the top of the page
 
     toggleNoContentMessage(divs.length === 0 && isFiltering);
 
@@ -639,16 +639,20 @@ const clearSearchResults = async () => {
 const clearButton = document.getElementById("clear-button");
 
 clearButton.addEventListener("click", async () => {
-  if (searchInput.value.trim() !== "") {
-    searchInput.value = ""; // Clear the search input field
-    clearSearchResults();   // Clear the search results and display all images
-    scrollToTop(); // Scroll smoothly to the top of the page
-  }
+
+    if (searchInput.value.trim() !== "") {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout( () => {
+      searchInput.value = ""; // Clear the search input field
+      clearSearchResults();   // Clear the search results and display all images
+    }, IMAGE_SEARCH_DELAY);
+      scrollToTop(); // Scroll smoothly to the top of the page
+    }
 });
 
 // Function to scroll smoothly to the top of the page
 const scrollToTop = () => {
-    window.scrollTo({
+  window.scrollTo({
     top: 0,
     behavior: 'smooth'
   });
