@@ -643,13 +643,6 @@ clearButton.addEventListener("click", async () => {
   if (searchInput.value.trim() !== "") {
     searchInput.value = ""; // Clear the search input field
     clearSearchResults();   // Clear the search results and display all images
-
-    try {
-      await generateAndAppendGridItems();
-    } catch (error) {
-      console.error("Error fetching images:", error);
-    }
-
     scrollToTop(); // Scroll smoothly to the top of the page
   }
 });
