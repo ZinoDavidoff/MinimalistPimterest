@@ -656,10 +656,7 @@ clearButton.addEventListener("click", async () => {
 
 // Function to scroll smoothly to the top of the page
 const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
+  window.scrollTo(0, 0);
 };
 
 const showScrollToTopButton = () => {
