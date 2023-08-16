@@ -633,7 +633,6 @@ const clearSearchResults = async () => {
   initializeMasonryLayout();
   isFiltering = false;
   observer.observe(grid.lastElementChild);
-  console.log(userSearchQuery)
 };
 
 // Clear the search input field and perform a new search when the "Clear" button is clicked
@@ -649,7 +648,10 @@ clearButton.addEventListener("click", async () => {
 
 // Function to scroll smoothly to the top of the page
 const scrollToTop = () => {
-  window.scrollTo(0, 0);
+    window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
 };
 
 const showScrollToTopButton = () => {
