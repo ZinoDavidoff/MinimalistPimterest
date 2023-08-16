@@ -11,6 +11,7 @@ let divs = [];
 let currentImageIndex;
 let page = 1;
 let isFiltering = false;
+let isResultsEmpty = false;
 let userSearchQuery = "random";
 
 // Function to fetch random images from a URL
@@ -18,14 +19,13 @@ const fetchRandomImages = async (page, query) => {
   const accessKey = 'ivYldu84VM4B8w3kV_lvqa_BGQFfs0PQBPbVM0QnjW0';
   const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${IMAGE_PER_PAGE}`);
   const data = await response.json();
-  console.log(data);
+  isResultsEmpty = data.results.length === 0 ? true : false;
+  console.log(data, isResultsEmpty);
   return data.results;
 }
 
 // Function to generate grid items asynchronously within a given index range
 const generateGridItems = async (startIndex, endIndex, images) => {
-  // Predefined image heights for variety
-  const imgHeights = GRID_ITEM_HEIGHTS;
 
   // Using Promise.all to create all the grid items asynchronously
   const newDivs = await Promise.all(
@@ -34,8 +34,8 @@ const generateGridItems = async (startIndex, endIndex, images) => {
       const itemIndex = startIndex + index;
 
       // Randomly choose an image height from the imgHeights array
-      const randomIndex = Math.floor(Math.random() * imgHeights.length);
-      const imgHeight = imgHeights[randomIndex];
+      const randomIndex = Math.floor(Math.random() * GRID_ITEM_HEIGHTS.length);
+      const imgHeight = GRID_ITEM_HEIGHTS[randomIndex];
 
       const imageUrl = image.urls.regular;
 
@@ -125,9 +125,9 @@ const generateAndAppendGridItems = async (searchQuery = userSearchQuery) => {
 
   // Observe the newly added last grid child
   const lastGridChild = grid.lastElementChild;
-  if (lastGridChild) {
-    observer.observe(lastGridChild);
-    }
+  if (lastGridChild && !isResultsEmpty) {
+      observer.observe(lastGridChild);
+  }
 };
 
 // Modal-related DOM Elements
@@ -613,23 +613,13 @@ clearButton.addEventListener("click", async () => {
   if (searchInput.value.trim() !== "") {
     searchInput.value = ""; // Clear the search input field
     clearSearchResults();   // Clear the search results and display all images
-
-    try {
-      await generateAndAppendGridItems("random");
-    } catch (error) {
-      console.error("Error fetching images:", error);
-    }
-
     scrollToTop(); // Scroll smoothly to the top of the page
   }
 });
 
 // Function to scroll smoothly to the top of the page
 const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  });
+  window.scrollTo(0, 0);
 };
 
 const showScrollToTopButton = () => {
