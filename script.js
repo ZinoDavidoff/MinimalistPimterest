@@ -1,7 +1,7 @@
 // Constants
 const GRID_ITEM_HEIGHTS = [250, 300, 350, 400];
 const IMAGE_PER_PAGE = 30;
-const IMAGE_SEARCH_DELAY = 700;
+const IMAGE_SEARCH_DELAY = 1000;
 const IMAGE_WIDTH = 400;
 
 // DOM Elements
@@ -193,23 +193,9 @@ const openImageModal = (imageData) => {
   modalContainer.classList.add("scaleImg");
   grid.style.filter = "blur(10px)";
 
-  // Load the modal image and hide the placeholder when the image is loaded
-  const adjustModalImageContainer = () => {
-    if (window.matchMedia("(max-width: 1135px)").matches) {
-      modalImageContainer.style.display = "block";
-      modalImageContainer.style.width = "0px";
-    } else {
-      modalImageContainer.style.display = "none";
-    }
-    modalImage.style.display = "block";
-  };
-
   modalImage.addEventListener("load", () => {
-    adjustModalImageContainer();
-  });
-
-  window.addEventListener("resize", () => {
-    adjustModalImageContainer();
+    modalImageContainer.style.display = "none";
+    modalImage.style.display = "block";
   });
 
   // Retrieve the comments for the current image
@@ -701,10 +687,6 @@ window.addEventListener("scroll", showScrollToTopButton);
 // Add an event listener for the click event on the scrollToTopButton
 const scrollToTopButton = document.getElementById("scrollToTopButton");
 scrollToTopButton.addEventListener("click", scrollToTop);
-
-if (window.matchMedia("(max-width: 1135px)").matches) {
-  modalImageContainer.style.display = "block";
-}
 
 const toggleNoContentMessage = (show) => {
   const noContentMessage = document.querySelector(".no-content-message");
