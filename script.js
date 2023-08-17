@@ -1,7 +1,7 @@
 // Constants
 const GRID_ITEM_HEIGHTS = [250, 300, 350, 400];
 const IMAGE_PER_PAGE = 30;
-const IMAGE_SEARCH_DELAY = 500;
+const IMAGE_SEARCH_DELAY = 1000;
 const IMAGE_WIDTH = 400;
 
 // DOM Elements
@@ -255,9 +255,7 @@ const addTagEventListeners = () => {
       // Set the selected tag as the value of the search input
       searchInput.value = selectedTag;
 
-      // Trigger a search based on the selected tag
-      const inputEvent = new Event("input");
-      searchInput.dispatchEvent(inputEvent);
+      performSearch();
       closeImageModal();
     });
   });
@@ -573,43 +571,50 @@ darkModeToggle.addEventListener('change', checkModeClassInComments);
 
 // Search related elements
 const searchInput = document.getElementById("search-input");
-let searchTimeout;
+let searchDelayTimer;
 
 // Event listener for the input event on the search input field
 searchInput.addEventListener("input", async () => {
-  clearTimeout(searchTimeout);
-  scrollToTop(); // Scroll smoothly to the top of the page
-
-  searchTimeout = setTimeout(async () => {
-    const newSearchQuery = searchInput.value.trim();
-
-    userSearchQuery = searchInput.value.trim();
-    isFiltering = newSearchQuery !== ""; // Update the filtering state
-
-    if (isFiltering) {
-      userSearchQuery = newSearchQuery;
-    } else {
-      userSearchQuery = getCurrentSeason(); // Return to random query when search is cleared or empty
-    }
-
-    grid.innerHTML = "";
-    try {
-      const newImages = await fetchRandomImages(1, userSearchQuery);
-      const newDivs = await generateGridItems(0, newImages.length, newImages);
-      divs = newDivs
-      appendGridItems(newDivs);
-      initializeMasonryLayout();
-      observer.observe(grid.lastElementChild);
-    } catch (error) {
-      console.error("Error fetching images:", error);
-    }
-
-    updateClearButtonState(userSearchQuery);
-
-    toggleNoContentMessage(divs.length === 0 && isFiltering);
-
-  }, IMAGE_SEARCH_DELAY);
+  performDelayedSearch();
 });
+
+const performDelayedSearch = async () => {
+  clearTimeout(searchDelayTimer); // Clear any existing timeout
+  searchDelayTimer = setTimeout(async () => {
+    performSearch();
+  }, IMAGE_SEARCH_DELAY); // Adjust the delay time as needed
+};
+
+const performSearch = async () => {
+  await scrollToTopSmoothly();
+
+  const newSearchQuery = searchInput.value.trim();
+
+  userSearchQuery = searchInput.value.trim();
+  isFiltering = newSearchQuery !== ""; // Update the filtering state
+
+  if (isFiltering) {
+    userSearchQuery = newSearchQuery;
+  } else {
+    userSearchQuery = getCurrentSeason(); // Return to random query when search is cleared or empty
+  }
+
+  grid.innerHTML = "";
+  try {
+    const newImages = await fetchRandomImages(1, userSearchQuery);
+    const newDivs = await generateGridItems(0, newImages.length, newImages);
+    divs = newDivs
+    appendGridItems(newDivs);
+    initializeMasonryLayout();
+    observer.observe(grid.lastElementChild);
+  } catch (error) {
+    console.error("Error fetching images:", error);
+  }
+
+  updateClearButtonState(userSearchQuery);
+
+  toggleNoContentMessage(divs.length === 0 && isFiltering);
+}
 
 
 const updateClearButtonState = (query) => {
@@ -639,18 +644,33 @@ const clearSearchResults = async () => {
 const clearButton = document.getElementById("clear-button");
 
 clearButton.addEventListener("click", async () => {
-
     if (searchInput.value.trim() !== "") {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout( () => {
+      await scrollToTopSmoothly();
       searchInput.value = ""; // Clear the search input field
       clearSearchResults();   // Clear the search results and display all images
-    }, IMAGE_SEARCH_DELAY);
-      scrollToTop(); // Scroll smoothly to the top of the page
     }
 });
 
 // Function to scroll smoothly to the top of the page
+const scrollToTopSmoothly = () => {
+  return new Promise((resolve) => {
+    if (window.scrollY === 0) {
+      resolve();
+    } else {
+      const handleScroll = () => {
+        if (window.scrollY === 0) {
+          window.removeEventListener("scroll", handleScroll);
+          resolve();
+        }
+      };
+
+      scrollToTop()
+
+      window.addEventListener("scroll", handleScroll);
+    }
+  });
+};
+
 const scrollToTop = () => {
   window.scrollTo({
     top: 0,
