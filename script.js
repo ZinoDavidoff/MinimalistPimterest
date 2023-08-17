@@ -22,19 +22,19 @@ const getCurrentSeason = () => {
 
   switch (month) {
     case 12: // December
-    case 1:  // January
-    case 2:  // February
+    case 1: // January
+    case 2: // February
       return "winter";
-    case 3:  // March
-    case 4:  // April
-    case 5:  // May
+    case 3: // March
+    case 4: // April
+    case 5: // May
       return "spring";
-    case 6:  // June
-    case 7:  // July
-    case 8:  // August
+    case 6: // June
+    case 7: // July
+    case 8: // August
       return "summer";
-    case 9:  // September
-    case 10:  // October
+    case 9: // September
+    case 10: // October
     case 11: // November
       return "autumn";
     default:
@@ -44,17 +44,18 @@ const getCurrentSeason = () => {
 
 // Function to fetch random images from a URL
 const fetchRandomImages = async (page, query) => {
-  const accessKey = 'aa56xD0OIhaIDLxDNRbawHIj8NAZ6H6yzuN1OwEjGGs';
-  const response = await fetch(`https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${IMAGE_PER_PAGE}`);
+  const accessKey = "aa56xD0OIhaIDLxDNRbawHIj8NAZ6H6yzuN1OwEjGGs";
+  const response = await fetch(
+    `https://api.unsplash.com/search/photos?query=${query}&client_id=${accessKey}&page=${page}&per_page=${IMAGE_PER_PAGE}`
+  );
   const data = await response.json();
   isResultsEmpty = data.results.length === 0 ? true : false;
   console.log(data, isResultsEmpty);
   return data.results;
-}
+};
 
 // Function to generate grid items asynchronously within a given index range
 const generateGridItems = async (startIndex, endIndex, images) => {
-
   // Using Promise.all to create all the grid items asynchronously
   const newDivs = await Promise.all(
     Array.from(images, async (image, index) => {
@@ -88,7 +89,7 @@ const generateGridItems = async (startIndex, endIndex, images) => {
       // Get the commentary and author data for the image
       const commentary = image.alt_description;
       const author = image.user.name;
-      const tags = image.tags.map(tag => tag.title);
+      const tags = image.tags.map((tag) => tag.title);
 
       img.setAttribute("data-author", image.user.name);
       img.setAttribute("data-commentary", image.alt_description);
@@ -102,7 +103,7 @@ const generateGridItems = async (startIndex, endIndex, images) => {
           commentary,
           author,
           itemIndex,
-          tags
+          tags,
         });
       });
 
@@ -112,7 +113,6 @@ const generateGridItems = async (startIndex, endIndex, images) => {
 
   return newDivs;
 };
-
 
 // Function to append the new grid items to the grid
 const appendGridItems = (newDivs) => {
@@ -139,7 +139,7 @@ const generateAndAppendGridItems = async () => {
   const endIndex = startIndex + IMAGE_PER_PAGE;
   const images = await fetchRandomImages(page, searchQuery);
   page++;
-  
+
   const newDivs = await generateGridItems(startIndex, endIndex, images);
 
   newDivs.forEach((div) => {
@@ -155,7 +155,7 @@ const generateAndAppendGridItems = async () => {
   // Observe the newly added last grid child
   const lastGridChild = grid.lastElementChild;
   if (lastGridChild && !isResultsEmpty) {
-      observer.observe(lastGridChild);
+    observer.observe(lastGridChild);
   }
 };
 
@@ -164,7 +164,7 @@ const modalOverlay = document.querySelector(".dark-overlay");
 const modalImage = document.querySelector("#modal-image");
 const modalContainer = document.querySelector(".modal-flex-container");
 const modalImageContainer = document.querySelector(".modal-image-placeholder");
-const searchContainer = document.querySelector(".search-container")
+const searchContainer = document.querySelector(".search-container");
 
 // Array to store image comments
 const imageComments = [];
@@ -175,7 +175,8 @@ const openImageModal = (imageData) => {
   const { imageUrl, title, commentary, author, itemIndex, tags } = imageData;
   currentImageIndex = itemIndex;
 
-  const formattedCommentary = commentary.charAt(0).toUpperCase() + commentary.slice(1);
+  const formattedCommentary =
+    commentary.charAt(0).toUpperCase() + commentary.slice(1);
 
   // Update the modal with the selected image and details
   modalImageContainer.style.display = "block";
@@ -183,7 +184,6 @@ const openImageModal = (imageData) => {
   modalImage.setAttribute("src", imageUrl);
   modalImage.style.height = `${IMAGE_WIDTH}px`;
   modalImage.style.width = `${IMAGE_WIDTH}px`;
-
 
   document.querySelector(".modal-title").textContent = `Image ${itemIndex + 1}`;
   document.querySelector(".modal-commentary").textContent = formattedCommentary;
@@ -196,18 +196,18 @@ const openImageModal = (imageData) => {
   // Load the modal image and hide the placeholder when the image is loaded
   const adjustModalImageContainer = () => {
     if (window.matchMedia("(max-width: 1135px)").matches) {
-      modalImageContainer.style.display = 'block';
-      modalImageContainer.style.width = '0px';
+      modalImageContainer.style.display = "block";
+      modalImageContainer.style.width = "0px";
     } else {
       modalImageContainer.style.display = "none";
     }
     modalImage.style.display = "block";
-  }
-  
+  };
+
   modalImage.addEventListener("load", () => {
     adjustModalImageContainer();
   });
-  
+
   window.addEventListener("resize", () => {
     adjustModalImageContainer();
   });
@@ -218,7 +218,7 @@ const openImageModal = (imageData) => {
 
   // Get the tags for the current image
   displayTags(tags);
-  addTagEventListeners()
+  addTagEventListeners();
 
   // Update the navigation buttons and other UI elements
   prevButton.style.display = currentImageIndex === 0 ? "none" : "block";
@@ -236,7 +236,7 @@ const displayTags = (tags) => {
 
   tags.forEach((tag) => {
     const tagSpan = document.createElement("span");
-    tagSpan.classList.add("tags")
+    tagSpan.classList.add("tags");
     tagSpan.textContent = "#" + tag.toLowerCase().trim(); // Add '#' before each tag
     tagsContainer.appendChild(tagSpan);
   });
@@ -354,7 +354,7 @@ downloadButtons.forEach((button) => {
 
     const link = document.createElement("a");
     link.href = imageUrl;
-    link.download = 'image.jpg';
+    link.download = "image.jpg";
     link.target = "_blank";
     document.body.appendChild(link);
 
@@ -381,7 +381,7 @@ modalContainer.addEventListener("click", (event) => {
         imageUrl: divs[newIndex].querySelector("img").getAttribute("src"),
         title: divs[newIndex].querySelector("h3").textContent,
         commentary: imageElement.getAttribute("data-commentary"),
-        author: imageElement.getAttribute("data-author"), 
+        author: imageElement.getAttribute("data-author"),
         itemIndex: newIndex,
         tags: JSON.parse(tagsDataAttribute),
         imgHeight: imageElement.height,
@@ -401,7 +401,7 @@ modalContainer.addEventListener("click", (event) => {
         navigateToIndex(currentImageIndex - 1);
       }
       break;
-  
+
     case clickedElement.classList.contains("next"):
       if (isFiltering) {
         if (currentImageIndex < divs.length - 1) {
@@ -417,7 +417,7 @@ modalContainer.addEventListener("click", (event) => {
         }
       }
       break;
-  
+
     default:
       break;
   }
@@ -455,7 +455,9 @@ const addComment = () => {
     imageComments[currentImageIndex] = commentsForImage;
 
     if (commentsList.querySelector(".no-comments-message")) {
-      commentsList.removeChild(commentsList.querySelector(".no-comments-message"));
+      commentsList.removeChild(
+        commentsList.querySelector(".no-comments-message")
+      );
     }
   }
 
@@ -466,11 +468,10 @@ const addComment = () => {
 
 // Function to update the state of the send button based on the comment field content
 const updateSendButtonState = () => {
-    const comment = commentaryField.value.trim();
-    sendButton.style.cursor = comment === "" ? "not-allowed" : "pointer";
-    sendButton.classList.toggle("disabled", comment === "");
-  };
-  
+  const comment = commentaryField.value.trim();
+  sendButton.style.cursor = comment === "" ? "not-allowed" : "pointer";
+  sendButton.classList.toggle("disabled", comment === "");
+};
 
 // Event listener for the input event on the commentary field
 commentaryField.addEventListener("input", updateSendButtonState);
@@ -521,53 +522,62 @@ commentaryField.addEventListener("keydown", (event) => {
 });
 
 // Dark mode related elements
-const darkModeToggle = document.getElementById('dark-mode-checkbox');
+const darkModeToggle = document.getElementById("dark-mode-checkbox");
 const body = document.body;
 const elementsWithDarkModeClass = [body, grid, modalContainer];
 
 // Function to apply styling to the comments list based on dark mode state
 const applyStylingToCommentsList = (darkMode) => {
-  const noCommentsWrittenItems = commentsList.querySelectorAll('li');
+  const noCommentsWrittenItems = commentsList.querySelectorAll("li");
   noCommentsWrittenItems.forEach((li) => {
     if (li.textContent.trim() === "No comments written") {
       li.style.backgroundColor = darkMode ? "#1a1a1a" : "#ffffff";
       li.style.color = darkMode ? "#ffffff" : "#1a1a1a";
     }
-    darkMode ? li.classList.add("light-mode") : li.classList.remove("light-mode");
+    darkMode
+      ? li.classList.add("light-mode")
+      : li.classList.remove("light-mode");
   });
 };
 
 // Function to add the 'dark-mode' class to relevant elements
 const addDarkModeClassToElements = () => {
-  elementsWithDarkModeClass.forEach((element) => element.classList.add('dark-mode'));
+  elementsWithDarkModeClass.forEach((element) =>
+    element.classList.add("dark-mode")
+  );
   applyStylingToCommentsList(true);
-  commentaryField.style.boxShadow = 'none';
+  commentaryField.style.boxShadow = "none";
   // Save dark mode preference in local storage
-  localStorage.setItem('darkModePreference', 'true');
+  localStorage.setItem("darkModePreference", "true");
 };
 
 // Function to remove the 'dark-mode' class from relevant elements
 const removeDarkModeClassFromElements = () => {
-  elementsWithDarkModeClass.forEach((element) => element.classList.remove('dark-mode'));
+  elementsWithDarkModeClass.forEach((element) =>
+    element.classList.remove("dark-mode")
+  );
   applyStylingToCommentsList(false);
-  commentaryField.style.boxShadow = '3px 3px 3px 0px #d1d1d1';
+  commentaryField.style.boxShadow = "3px 3px 3px 0px #d1d1d1";
   // Save dark mode preference in local storage
-  localStorage.setItem('darkModePreference', 'false');
+  localStorage.setItem("darkModePreference", "false");
 };
 
 // Function to check the current dark mode state and apply relevant class
 const checkModeClassInComments = () => {
-    darkModeToggle.checked ? addDarkModeClassToElements() : removeDarkModeClassFromElements();
-  };  
+  darkModeToggle.checked
+    ? addDarkModeClassToElements()
+    : removeDarkModeClassFromElements();
+};
 
 // Load the user's dark mode preference from local storage and apply it
-const darkModePreference = localStorage.getItem('darkModePreference');
-darkModeToggle.checked = darkModePreference === 'true';
-darkModePreference === 'true' ? addDarkModeClassToElements() : removeDarkModeClassFromElements();
-
+const darkModePreference = localStorage.getItem("darkModePreference");
+darkModeToggle.checked = darkModePreference === "true";
+darkModePreference === "true"
+  ? addDarkModeClassToElements()
+  : removeDarkModeClassFromElements();
 
 // Event listener for the dark mode toggle change event
-darkModeToggle.addEventListener('change', checkModeClassInComments);
+darkModeToggle.addEventListener("change", checkModeClassInComments);
 
 // Search related elements
 const searchInput = document.getElementById("search-input");
@@ -603,7 +613,7 @@ const performSearch = async () => {
   try {
     const newImages = await fetchRandomImages(1, userSearchQuery);
     const newDivs = await generateGridItems(0, newImages.length, newImages);
-    divs = newDivs
+    divs = newDivs;
     appendGridItems(newDivs);
     initializeMasonryLayout();
     observer.observe(grid.lastElementChild);
@@ -614,13 +624,11 @@ const performSearch = async () => {
   updateClearButtonState(userSearchQuery);
 
   toggleNoContentMessage(divs.length === 0 && isFiltering);
-}
-
+};
 
 const updateClearButtonState = (query) => {
   clearButton.disabled = query === "";
 };
-
 
 // Function to clear the search results and display all images
 const clearSearchResults = async () => {
@@ -644,11 +652,11 @@ const clearSearchResults = async () => {
 const clearButton = document.getElementById("clear-button");
 
 clearButton.addEventListener("click", async () => {
-    if (searchInput.value.trim() !== "") {
-      await scrollToTopSmoothly();
-      searchInput.value = ""; // Clear the search input field
-      clearSearchResults();   // Clear the search results and display all images
-    }
+  if (searchInput.value.trim() !== "") {
+    await scrollToTopSmoothly();
+    searchInput.value = ""; // Clear the search input field
+    clearSearchResults(); // Clear the search results and display all images
+  }
 });
 
 // Function to scroll smoothly to the top of the page
@@ -664,7 +672,7 @@ const scrollToTopSmoothly = () => {
         }
       };
 
-      scrollToTop()
+      scrollToTop();
 
       window.addEventListener("scroll", handleScroll);
     }
@@ -674,7 +682,7 @@ const scrollToTopSmoothly = () => {
 const scrollToTop = () => {
   window.scrollTo({
     top: 0,
-    behavior: 'smooth'
+    behavior: "smooth",
   });
 };
 
@@ -684,19 +692,18 @@ const showScrollToTopButton = () => {
 
   // Show the button if the user has scrolled beyond the viewport height, otherwise hide it
   const scrollToTopButton = document.getElementById("scrollToTopButton");
-  scrollToTopButton.classList.toggle('show', scrollY >= viewportHeight / 2);
+  scrollToTopButton.classList.toggle("show", scrollY >= viewportHeight / 2);
 };
 
 // Add an event listener for the scroll event to show/hide the button
-window.addEventListener('scroll', showScrollToTopButton);
+window.addEventListener("scroll", showScrollToTopButton);
 
 // Add an event listener for the click event on the scrollToTopButton
 const scrollToTopButton = document.getElementById("scrollToTopButton");
-scrollToTopButton.addEventListener('click', scrollToTop);
-
+scrollToTopButton.addEventListener("click", scrollToTop);
 
 if (window.matchMedia("(max-width: 1135px)").matches) {
-  modalImageContainer.style.display = 'block'
+  modalImageContainer.style.display = "block";
 }
 
 const toggleNoContentMessage = (show) => {
