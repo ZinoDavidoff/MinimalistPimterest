@@ -1,7 +1,7 @@
 // Constants
 const GRID_ITEM_HEIGHTS = [250, 300, 350, 400];
 const IMAGE_PER_PAGE = 30;
-const IMAGE_SEARCH_DELAY = 1000;
+const IMAGE_SEARCH_DELAY = 700;
 const IMAGE_WIDTH = 400;
 
 // DOM Elements
