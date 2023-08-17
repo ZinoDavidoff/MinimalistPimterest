@@ -127,7 +127,7 @@ body {
 }
 
 .modal-image-placeholder {
-  padding: 2rem;
+  /* padding: 2rem; */
   width: 400px;
   height: 400px;
 }
@@ -629,7 +629,7 @@ textarea::-webkit-scrollbar-thumb {
   }
 
   #modal-image {
-    margin-left: -4rem;
+    transform: translateX(-1px);
   }
 
   .modal-info {
