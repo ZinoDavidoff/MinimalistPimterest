@@ -107,12 +107,78 @@ const generateGridItems = async (startIndex, endIndex, images) => {
         });
       });
 
+      const favoriteButton = document.createElement("i");
+      favoriteButton.classList.add("fa", "fa-heart", "favorite-button");
+      div.appendChild(favoriteButton);
+
+      const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+      if (favorites.some((favImage) => favImage.id === image.id)) {
+        favoriteButton.disabled = true;
+        favoriteButton.classList.toggle("fav-icon")
+      }
+
+      favoriteButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (!favoriteButton.classList.contains("fav-icon")) {
+          addToFavorites(image);
+          favoriteButton.classList.add("fav-icon");
+        } else {
+          removeFromFavorites(image);
+          favoriteButton.classList.remove("fav-icon");
+        }      
+      });
+
       return div;
     })
   );
 
   return newDivs;
 };
+
+const addToFavorites = (image) => {
+  const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+  if (!favorites.some((favImage) => favImage.id === image.id)) {
+    favorites.push(image);
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }
+};
+
+const removeFromFavorites = (image) => {
+  const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+  const updatedFavorites = favorites.filter((favImage) => favImage.id !== image.id);
+  localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+};
+
+goToFavoritesButton.addEventListener("click", () => {
+  displayFavoriteImages();
+});
+
+const displayFavoriteImages = async () => {
+  grid.innerHTML = ""; // Clear the grid
+
+  const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+  if (favorites.length === 0) {
+    // Display a message when no favorites are found
+    const noFavoritesMessage = document.createElement("h2");
+    noFavoritesMessage.textContent = "No favorite images found";
+    grid.appendChild(noFavoritesMessage);
+    return;
+  }
+
+  const newDivs = await generateGridItems(0, favorites.length, favorites);
+
+  newDivs.forEach((div) => {
+    grid.appendChild(div);
+    const favoriteButton = div.querySelector(".favorite-button");
+    favoriteButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      displayFavoriteImages(); // Refresh the favorites grid
+    });
+  });
+
+  initializeMasonryLayout();
+};
+
 
 // Function to append the new grid items to the grid
 const appendGridItems = (newDivs) => {
