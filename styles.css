@@ -641,3 +641,31 @@ textarea::-webkit-scrollbar-thumb {
     display: none;
   }
 }
+
+.favorite-button {
+  opacity: .7;
+  position: absolute;
+  font-size: 20px;
+  right: 20px;
+  top: 10px;
+  z-index: 100000;
+}
+
+.fav-icon {
+  opacity: 1;
+  color: red;
+}
+
+#goToFavoritesButton {
+  z-index: 1000000;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: inline-block;
+    width: 40px; 
+    height: 40px; 
+    background-image: url('https://www.freeiconspng.com/thumbs/bookmark-icon/book-bookmark-icon-5.png');
+    background-size: cover; 
+    background-repeat: no-repeat;
+    cursor: pointer;
+  }
