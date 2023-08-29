@@ -112,6 +112,11 @@ const generateGridItems = async (startIndex, endIndex, images) => {
       div.appendChild(favoriteButton);
 
       const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+      if(favorites.length > 0) {
+        goToFavoritesButton.style.display = "inline-block"; 
+      }
+
       if (favorites.some((favImage) => favImage.id === image.id)) {
         favoriteButton.disabled = true;
         favoriteButton.classList.toggle("fav-icon")
@@ -140,6 +145,7 @@ const addToFavorites = (image) => {
   if (!favorites.some((favImage) => favImage.id === image.id)) {
     favorites.push(image);
     localStorage.setItem("favorites", JSON.stringify(favorites));
+    goToFavoritesButton.style.display = "inline-block"; 
   }
 };
 
@@ -147,7 +153,13 @@ const removeFromFavorites = (image) => {
   const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
   const updatedFavorites = favorites.filter((favImage) => favImage.id !== image.id);
   localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+  if (updatedFavorites.length === 0) {
+    goToFavoritesButton.style.display = "none";
+  }
 };
+
+const goToFavoritesButton = document.getElementById("goToFavoritesButton");
+const homepageButton = document.getElementById("goToHomepageButton");
 
 goToFavoritesButton.addEventListener("click", () => {
   displayFavoriteImages();
@@ -158,17 +170,21 @@ const displayFavoriteImages = async () => {
 
   const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
   if (favorites.length === 0) {
-    // Display a message when no favorites are found
-    const noFavoritesMessage = document.createElement("h2");
-    noFavoritesMessage.textContent = "No favorite images found";
-    grid.appendChild(noFavoritesMessage);
-    return;
+    clearSearchResults();
+    homepageButton.style.display = "none";
+  } else {
+    homepageButton.style.display = "inline-block";
+    homepageButton.addEventListener("click", () => {
+      clearSearchResults();
+      homepageButton.style.display = "none";
+    });
   }
 
   const newDivs = await generateGridItems(0, favorites.length, favorites);
 
   newDivs.forEach((div) => {
     grid.appendChild(div);
+    goToFavoritesButton.style.display = "none";
     const favoriteButton = div.querySelector(".favorite-button");
     favoriteButton.addEventListener("click", (event) => {
       event.stopPropagation();
