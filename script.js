@@ -174,10 +174,6 @@ const displayFavoriteImages = async () => {
     homepageButton.style.display = "none";
   } else {
     homepageButton.style.display = "inline-block";
-    homepageButton.addEventListener("click", () => {
-      clearSearchResults();
-      homepageButton.style.display = "none";
-    });
   }
 
   const newDivs = await generateGridItems(0, favorites.length, favorites);
@@ -194,6 +190,12 @@ const displayFavoriteImages = async () => {
 
   initializeMasonryLayout();
 };
+
+
+homepageButton.addEventListener("click", () => {
+  clearSearchResults();
+  homepageButton.style.display = "none";
+});
 
 
 // Function to append the new grid items to the grid
