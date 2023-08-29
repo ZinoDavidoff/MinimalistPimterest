@@ -656,16 +656,24 @@ textarea::-webkit-scrollbar-thumb {
   color: red;
 }
 
-#goToFavoritesButton {
-  z-index: 1000000;
+#goToFavoritesButton,
+#goToHomepageButton {
+    display: none;
+    z-index: 1000000;
     position: fixed;
     bottom: 20px;
     left: 20px;
-    display: inline-block;
     width: 40px; 
     height: 40px; 
-    background-image: url('https://www.freeiconspng.com/thumbs/bookmark-icon/book-bookmark-icon-5.png');
     background-size: cover; 
     background-repeat: no-repeat;
     cursor: pointer;
+  }
+
+  #goToFavoritesButton {
+    background-image: url('https://www.freeiconspng.com/thumbs/bookmark-icon/book-bookmark-icon-5.png');
+  }
+
+  #goToHomepageButton {
+    background-image: url('https://static.vecteezy.com/system/resources/previews/010/157/483/original/house-symbol-and-home-icon-sign-design-free-png.png');
   }
