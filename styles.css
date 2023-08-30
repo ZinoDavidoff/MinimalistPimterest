@@ -648,11 +648,18 @@ textarea::-webkit-scrollbar-thumb {
   font-size: 20px;
   right: 20px;
   top: 10px;
+  color: #ffffff;
   z-index: 100000;
+  transition: 
+    opacity 0.2s ease-in-out,
+    color 0.2s ease-in-out; 
+}
+
+.favorite-button:hover {
+  opacity: 1;  
 }
 
 .fav-icon {
-  opacity: 1;
   color: red;
 }
 
@@ -668,6 +675,44 @@ textarea::-webkit-scrollbar-thumb {
     background-size: cover; 
     background-repeat: no-repeat;
     cursor: pointer;
+  }
+
+
+  #goToFavoritesButton::after,
+  #goToHomepageButton::after,
+  .favorite-button::after,
+  .toggle-switch::after {
+    content: attr(title); /* Use the title attribute as tooltip content */
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 9999999; /* Ensure the tooltip appears above other content */
+    left: 120%;
+    top: 50%;
+    opacity: 1;
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.2s ease-in-out; /* Add scale transition */
+  }
+
+  .favorite-button::after {
+    font-family: sans-serif;
+    font-weight: 400;
+    left: unset;
+    right: 120%;
+    transform-origin: right center; /* Adjusted for right alignment */
+  }
+  
+  #goToFavoritesButton:hover::after,
+  #goToHomepageButton:hover::after,
+  .favorite-button:hover::after,
+  .toggle-switch:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) scaleX(1);
   }
 
   #goToFavoritesButton {
