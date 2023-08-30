@@ -109,6 +109,7 @@ const generateGridItems = async (startIndex, endIndex, images) => {
 
       const favoriteButton = document.createElement("i");
       favoriteButton.classList.add("fa", "fa-heart", "favorite-button");
+    
       div.appendChild(favoriteButton);
 
       const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
@@ -122,14 +123,21 @@ const generateGridItems = async (startIndex, endIndex, images) => {
         favoriteButton.classList.toggle("fav-icon")
       }
 
+      favoriteButton.classList.contains("fav-icon")
+      ? favoriteButton.setAttribute("title", "Remove from Favorites")
+      : favoriteButton.setAttribute("title", "Add to Favorites");
+
       favoriteButton.addEventListener("click", (event) => {
         event.stopPropagation();
         if (!favoriteButton.classList.contains("fav-icon")) {
           addToFavorites(image);
           favoriteButton.classList.add("fav-icon");
+          favoriteButton.setAttribute('title', 'Remove from Favorites')
         } else {
           removeFromFavorites(image);
           favoriteButton.classList.remove("fav-icon");
+          favoriteButton.setAttribute('title', 'Add to Favorites')
+
         }      
       });
 
@@ -636,7 +644,7 @@ const removeDarkModeClassFromElements = () => {
 const checkModeClassInComments = () => {
   darkModeToggle.checked
     ? addDarkModeClassToElements()
-    : removeDarkModeClassFromElements();
+    : removeDarkModeClassFromElements()
 };
 
 // Load the user's dark mode preference from local storage and apply it
@@ -644,10 +652,19 @@ const darkModePreference = localStorage.getItem("darkModePreference");
 darkModeToggle.checked = darkModePreference === "true";
 darkModePreference === "true"
   ? addDarkModeClassToElements()
-  : removeDarkModeClassFromElements();
+  : removeDarkModeClassFromElements()
+
+const toggleSwitchLabel = document.querySelector(".toggle-switch");
+const darkModeTitle = "Switch to Dark Mode";
+const lightModeTitle = "Switch to Light Mode";
+
+toggleSwitchLabel.title = darkModeToggle.checked ? lightModeTitle : darkModeTitle;
 
 // Event listener for the dark mode toggle change event
-darkModeToggle.addEventListener("change", checkModeClassInComments);
+darkModeToggle.addEventListener("change", () => {
+  checkModeClassInComments()
+  toggleSwitchLabel.title = darkModeToggle.checked ? lightModeTitle : darkModeTitle;
+});
 
 // Search related elements
 const searchInput = document.getElementById("search-input");
