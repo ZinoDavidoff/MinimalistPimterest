@@ -3,6 +3,7 @@
 }
 
 body {
+  overflow-x: hidden;
   font-family: sans-serif;
 }
 
@@ -470,6 +471,7 @@ textarea::-webkit-scrollbar-thumb {
 
 /* Style the slider knob */
 .toggle-switch .slider:before {
+  
   position: absolute;
   content: "";
   height: 26px;
