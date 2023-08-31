@@ -370,7 +370,20 @@ modalOverlay.addEventListener("click", (event) => {
 });
 
 // Generate and append initial grid items
-generateAndAppendGridItems();
+generateAndAppendGridItems();const isElementIntersectingViewport = (element) => {
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.5, // Adjust this threshold as needed
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    return entries[0].isIntersecting;
+  }, options);
+
+  observer.observe(element);
+};
+
 
 // Intersection Observer callback function for infinite scrolling
 const intersectionCallback = (entries) => {
