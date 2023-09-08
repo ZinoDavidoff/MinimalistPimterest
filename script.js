@@ -724,6 +724,7 @@ const performSearch = async () => {
   updateClearButtonState(userSearchQuery);
 
   toggleNoContentMessage(divs.length === 0 && isFiltering);
+  homepageButton.style.display = "none";
 };
 
 const updateClearButtonState = (query) => {
